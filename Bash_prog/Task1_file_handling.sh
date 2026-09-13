@@ -3,7 +3,7 @@
 # @title        Task1_file_handling.sh
 # @author       Agnes Yeboah
 # @index        5230160043
-# @school       University for Skills Training and Entrepreneurial Development (USTED)
+# @school       University of Skills Training and Entrepreneurial Development (USTED)
 # @description  Demonstrates basic file handling: create dir/file,
 #               write, append, read, backup, and delete with checks.
 # @date         2026-09-12
