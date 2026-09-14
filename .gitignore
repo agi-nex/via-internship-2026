@@ -1,0 +1,6 @@
+# Generated files from running the Bash scripts - not part of the source code
+*.log
+results.txt
+sample_access.log
+data.txt
+data.txt.bak
