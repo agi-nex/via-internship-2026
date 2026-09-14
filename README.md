@@ -9,3 +9,4 @@ Index Number: 5230160043
 
 ## Notes
 - Network Fundamentals rooms 3-5 (OSI Model, Packets & Frames, Extending Your Network) became Premium-only on TryHackMe. Screenshots 3-5 show the "Premium room" notice instead of 100% completion, as advised by the instructor.
+- How the Web Works rooms 3-4 (How Websites Work, Putting it all together) are also Premium-only. Screenshots 3-4 show the "Premium room" notice instead of 100% completion, as advised by the instructor.
