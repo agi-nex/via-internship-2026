@@ -304,3 +304,27 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Actions on Objectives:** Gained direct visual and interactive access to the target's desktop, including a pre-existing root terminal session, demonstrating complete control over the graphical environment.
   - (No Weaponization, Installation, or C2 stage in the traditional sense, since VNC access is a direct, interactive remote-desktop session rather than a delivered payload establishing a separate channel.)
 - **Outcome / Impact:** Achieved full graphical remote desktop access to the target as root, via a single weak password with no other protection — demonstrating that even non-code-execution services can provide complete system access when authentication is weak.
+
+
+
+---
+
+## Exploit 10: Unauthenticated Root Bindshell
+
+- **Service / Port:** Bindshell / 1524
+- **Vulnerability:** Metasploitable2 was deliberately built with a root-owned command shell bound directly to port 1524, listening with absolutely no authentication of any kind.
+- **Tool Used:** netcat (nc) — no Metasploit module, no exploit code, no credentials
+- **Why This Tool:** Recon flagged port 1524 with the nmap service banner literally reading "Metasploitable root shell," indicating no exploitation logic is required at all — a raw TCP client is sufficient to interact with an already-open, unauthenticated root shell. Using netcat here (rather than any exploit framework) is the correct tool precisely because there is nothing to exploit; the port itself is the vulnerability.
+- **Steps:**
+  1. `nc 192.168.100.204 1524`
+  2. Immediately received a root shell prompt with no authentication
+  3. Confirmed access with `whoami` and `id`
+- **Evidence:** evidence/exploit10.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** nmap identified the open port 1524 and its banner explicitly describing it as a root shell.
+  - **Delivery:** The netcat connection itself was the entire delivery mechanism — a raw TCP handshake to the listening port.
+  - **Exploitation:** No exploitation step was actually required; connecting to the port directly grants a shell, since the "vulnerability" is the mere existence of an unauthenticated listener.
+  - **Command & Control:** The live netcat TCP connection served as the ongoing interactive control channel to the target.
+  - **Actions on Objectives:** Ran whoami and id to confirm full root shell access.
+  - (No Weaponization or Installation stage applies, since no payload was crafted or delivered — the shell was already running and waiting on the target before any interaction occurred.)
+- **Outcome / Impact:** Achieved instant, unauthenticated root access with a single netcat command and no tooling sophistication whatsoever. Unlike all nine previous exploits, this required no reconnaissance beyond noticing the open port, no credential guessing, and no code-execution technique — making it arguably the most severe finding in this assessment, since the barrier to exploitation is effectively zero.
