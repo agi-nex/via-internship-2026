@@ -328,3 +328,32 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Actions on Objectives:** Ran whoami and id to confirm full root shell access.
   - (No Weaponization or Installation stage applies, since no payload was crafted or delivered — the shell was already running and waiting on the target before any interaction occurred.)
 - **Outcome / Impact:** Achieved instant, unauthenticated root access with a single netcat command and no tooling sophistication whatsoever. Unlike all nine previous exploits, this required no reconnaissance beyond noticing the open port, no credential guessing, and no code-execution technique — making it arguably the most severe finding in this assessment, since the barrier to exploitation is effectively zero.
+
+
+
+---
+
+## Kill Chain Coverage Summary
+
+| Exploit | Recon | Weaponization | Delivery | Exploitation | Installation | C2 | Actions on Objectives |
+|---|---|---|---|---|---|---|---|
+| 1. vsftpd 2.3.4 Backdoor | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 2. UnrealIRCd 3.2.8.1 Backdoor | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 3. Samba usermap_script | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 4. Java RMI Server | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 5. Tomcat Manager Weak Creds | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 6. PostgreSQL Default Creds | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 7. NFS Misconfiguration (Manual) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| 8. MySQL Blank Root Password | ✔ | | ✔ | ✔ | | | ✔ |
+| 9. VNC Weak Password | ✔ | | ✔ | ✔ | | | ✔ |
+| 10. Unauthenticated Root Bindshell | ✔ | | ✔ | ✔ | | ✔ | ✔ |
+
+---
+
+## Lessons Learned / Mitigations
+
+- **Exploit 1 (vsftpd backdoor):** Never run software from unofficial/compromised distribution sources; verify package checksums/signatures. Patch or replace vsftpd with a current, maintained version.
+- **Exploit 3 (Samba usermap_script):** Upgrade Samba past 3.0.25rc3; disable the "username map script" option unless strictly necessary, and never pass unsanitized input to a shell.
+- **Exploit 5 (Tomcat weak credentials):** Change all default application credentials immediately after installation; restrict the Manager interface to trusted IPs only, and enforce strong password policies.
+- **Exploit 6 (PostgreSQL default credentials):** Never leave default database credentials in place; disable or restrict the ability to load server-side shared libraries unless explicitly required.
+- **Exploit 7 (NFS misconfiguration):** Never export filesystems with no host restrictions; always enable root_squash so remote root users are downgraded to an unprivileged account.
