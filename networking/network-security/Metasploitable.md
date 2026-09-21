@@ -253,3 +253,26 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The SSH session itself served as the control channel back to the target.
   - **Actions on Objectives:** Ran whoami and id to confirm full root shell access.
 - **Outcome / Impact:** Achieved persistent, passwordless root SSH access via a pure filesystem misconfiguration, with no application vulnerability, backdoor, or weak credential involved — demonstrating that infrastructure-level misconfigurations can be just as critical as software vulnerabilities.
+
+
+
+---
+
+## Exploit 8: MySQL Blank Root Password (Manual)
+
+- **Service / Port:** MySQL / 3306
+- **Vulnerability:** The MySQL server is configured with a completely blank password for the root account (and other accounts), allowing unauthenticated administrative access to the database server.
+- **Tool Used:** MySQL command-line client (mysql) — no Metasploit module used
+- **Why This Tool:** Recon identified MySQL 5.0.51a on port 3306. Testing for blank/default credentials is most directly and clearly done with the native database client rather than an exploit module, since the goal here is authentication testing and data access, not code execution — the mysql client also lets the actual data exposure be demonstrated directly, which is the real-world impact of this misconfiguration.
+- **Steps:**
+  1. `mysql -h 192.168.100.204 -u root --ssl=0` — connected as root with no password (the `--ssl=0` flag was required to work around a TLS version mismatch with the old server)
+  2. `SHOW DATABASES;` — enumerated all databases on the server
+  3. `SELECT User, Host, Password FROM mysql.user;` — confirmed all MySQL accounts (root, debian-sys-maint, guest) have blank passwords
+- **Evidence:** evidence/exploit8.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified MySQL 5.0.51a-3ubuntu5 running on port 3306.
+  - **Delivery:** Connecting to the server with the mysql client and an empty password delivered the authentication attempt directly to the target.
+  - **Exploitation:** The server accepted the blank-password login, granting full administrative access with no actual credential required.
+  - **Actions on Objectives:** Enumerated databases and queried the mysql.user table, directly exposing every account's (blank) password field — demonstrating real data access/exfiltration risk.
+  - (This exploit does not involve Weaponization, Installation, or C2 in the traditional sense, since no payload or persistent shell was delivered — access was gained through legitimate protocol authentication with a missing credential.)
+- **Outcome / Impact:** Achieved full administrative access to the MySQL server with no credentials at all, and confirmed the same blank-password issue affects every account on the server — a critical, easily-exploitable misconfiguration that exposes all database contents to any network-connected attacker.
