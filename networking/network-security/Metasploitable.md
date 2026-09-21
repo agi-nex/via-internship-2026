@@ -276,3 +276,31 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Actions on Objectives:** Enumerated databases and queried the mysql.user table, directly exposing every account's (blank) password field — demonstrating real data access/exfiltration risk.
   - (This exploit does not involve Weaponization, Installation, or C2 in the traditional sense, since no payload or persistent shell was delivered — access was gained through legitimate protocol authentication with a missing credential.)
 - **Outcome / Impact:** Achieved full administrative access to the MySQL server with no credentials at all, and confirmed the same blank-password issue affects every account on the server — a critical, easily-exploitable misconfiguration that exposes all database contents to any network-connected attacker.
+
+
+
+---
+
+## Exploit 9: VNC Weak Password Authentication
+
+- **Service / Port:** VNC / 5900
+- **Vulnerability:** The VNC server is configured with a weak, easily-guessable password ("password") and no additional authentication or IP restriction, allowing full graphical remote desktop access to anyone who knows or brute-forces the password.
+- **Tool Used:** Metasploit — auxiliary/scanner/vnc/vnc_login (credential discovery) followed by vncviewer (a standard VNC client) for the actual connection
+- **Why This Tool:** Recon identified VNC protocol 3.3 on port 5900. The login scanner efficiently tests common/default VNC passwords rather than guessing manually; once a valid password was confirmed, a standard VNC client (vncviewer) was the correct tool to actually connect and access the graphical desktop, since VNC is a remote-desktop protocol rather than a code-execution vulnerability requiring a Metasploit exploit module.
+- **Steps:**
+  1. `msfconsole`
+  2. `search vnc_login`
+  3. `use auxiliary/scanner/vnc/vnc_login`
+  4. `set RHOSTS 192.168.100.204`
+  5. `run` — found valid password: "password" (VNC has no username field)
+  6. `vncviewer 192.168.100.204` (from a separate terminal)
+  7. Entered password "password" when prompted
+  8. Confirmed access — connected directly to a live root terminal already open on the target's desktop
+- **Evidence:** evidence/exploit9.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Actions on Objectives
+  - **Reconnaissance:** nmap identified the VNC service; the login scanner then confirmed the weak password.
+  - **Delivery:** Connecting via vncviewer with the discovered password delivered the authentication attempt to the target's VNC server.
+  - **Exploitation:** The server accepted the weak password, granting full graphical desktop access.
+  - **Actions on Objectives:** Gained direct visual and interactive access to the target's desktop, including a pre-existing root terminal session, demonstrating complete control over the graphical environment.
+  - (No Weaponization, Installation, or C2 stage in the traditional sense, since VNC access is a direct, interactive remote-desktop session rather than a delivered payload establishing a separate channel.)
+- **Outcome / Impact:** Achieved full graphical remote desktop access to the target as root, via a single weak password with no other protection — demonstrating that even non-code-execution services can provide complete system access when authentication is weak.
